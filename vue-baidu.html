@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            list-style: none;
+            border: 1px solid #ccc;
+            position: absolute;
+            top: 29px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        li {
+            height: 30px;
+            line-height: 30px;
+            text-indent: 10px;
+        }
+
+        #box {
+            width: 501px;
+            margin: 100px auto;
+            position: relative;
+        }
+
+        input {
+            width: 402px;
+            height: 30px;
+            border: 1px solid #ccc;
+            outline: none;
+            box-sizing: border-box;
+            float: left;
+        }
+
+        button {
+            width: 100px;
+            height: 30px;
+            line-height: 30px;
+            color: white;
+            border: none;
+            outline: none;
+            background-color: #38f;
+            float: left;
+            margin-left: -1px;
+        }
+
+        .selecteBd {
+            border: 1px solid #38f;
+        }
+
+        .selecteBgc {
+            background-color: #ccc;
+        }
+
+        .borderNone {
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="box">
+    <div class="search">
+        <input type="text" v-model="text" @keyup="getData($event)" @focus="{select=true}"
+               :class="{selecteBd:select}" @blur="{select=false}" @keydown.down="keydown()"
+               @keydown.up.prevent="keyup()"/>
+        <button>搜索一下</button>
+    </div>
+
+    <ul :class="{borderNone:!dataArr.length}">
+        <li v-for="(item,index) in dataArr" v-text="item" :class="{selecteBgc:selected===index}"
+            @mouseenter="hover(index)"></li>
+    </ul>
+</div>
+
+</body>
+<script src="https://cdn.bootcss.com/vue/2.5.3/vue.min.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.3.4/vue-resource.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#box',
+        data: {
+            dataArr: [],
+            text: '',
+            select: false,
+            selected: -1
+        },
+        methods: {
+            getData: function (ev) {
+                if (ev.keyCode === 8) {
+                    this.selected = -1;
+                }
+                if (ev.keyCode != 38 && ev.keyCode != 40) {
+                    this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su',
+                            {
+                                params: {
+                                    wd: this.text
+                                }, jsonp: 'cb'
+                            }, {emulatejson: true}).then(function (res) {
+                                this.dataArr = res.data.s.slice(0, 5);
+                            }, function (res) {
+                            })
+                }
+
+            },
+            keydown: function () {
+                this.selected++;
+                this.selected = this.selected > 4 ? 0 : this.selected;
+                this.text = this.dataArr[this.selected];
+                console.log(this.dataArr[this.selected])
+            },
+            keyup: function () {
+                this.selected--;
+                this.selected = this.selected < 0 ? 4 : this.selected;
+                this.text = this.dataArr[this.selected];
+                console.log(this.dataArr[this.selected])
+            },
+            hover: function (index) {
+                this.selected = index;
+            }
+
+        }
+    })
+</script>
+</html>
